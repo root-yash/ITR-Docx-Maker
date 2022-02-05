@@ -147,7 +147,7 @@ class Itrparser:
                     else:
                         tempi = 0
                         if ftype[idx] == "up":
-                            tempi = i-1
+                            tempi = i+1
                         else:
                             tempi = i
                         if columne[idx] == columns[idx]:
