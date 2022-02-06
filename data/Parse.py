@@ -2,7 +2,7 @@ import pdfplumber
 import re
 import configparser
 import time
-
+from docxtpl import DocxTemplate
 
 class Itrparser:
 
@@ -113,7 +113,9 @@ class Itrparser:
                         if ftype[idx] == "same":
                             tempi = i
                         elif ftype[idx] == "up":
-                            tempi = i+1
+                            tempi = i + 1
+                        elif ftype[idx] == "down":
+                            tempi = i - 1
                         else:
                             flag = 0
                             data[key[idx]] = self.tableparse(table, start[idx])
@@ -202,20 +204,23 @@ class Itrparser:
                 i = i+1
             print(len(value))
             print(value)
+        return value, year, str(itr)
 
     def main(self):
-        value = {}
-        self.parse_data()
-        # for i in self.pageno:
-        #     value.update(self.page_all(self.pages[i], i))
-        # if len(self.tablep[0]) > 0:
-        #     value.update(self.tableparse())
-        # print(value)
-        # print(len(value))
+        return self.parse_data()
 
 
-def parsepdf(loc):
+def parsepdf(loc, save_loc):
+
+    # Input : loc :string location of file/pdf
+    #         save_loc:string location where to save the generated docx
+    # function parse the itr and get important information
+    # Output : itr save at save location
     s = time.time()
     cl = Itrparser(loc)
-    cl.main()
+    value, year, itr = cl.main()
+    docx = DocxTemplate('template/{}_{}.docx'.format(itr, year))
+    docx.render(value)
+    docx.save(save_loc)
     print(time.time()-s)
+    return value, year
