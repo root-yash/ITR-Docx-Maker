@@ -105,7 +105,7 @@ class Itrparser:
                         if last_name.lower().startswith("prop"):
                             last_name = " ".join(last_name.split(" ")[2:])
                         # Name,company name
-                        data.update({"Full Name": first_name, "cmpny_name": last_name})
+                        data.update({"full_name": first_name, "cmpny_name": last_name})
                     # all the other itr
                     else:
                         flag = 1
