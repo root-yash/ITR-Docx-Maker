@@ -33,5 +33,4 @@ if __name__ == '__main__':
 
 
 # TODO: add template one after another
-# TODO: fill with
 # TODO: when file is opened and can't edit
