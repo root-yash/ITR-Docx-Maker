@@ -1,6 +1,7 @@
 import configparser
 
 def bracket(loc,sec,key):
+    # add bracket [] when ( + or . if present for re
     config = configparser.RawConfigParser()
     config.read(loc)
     temp = []
@@ -26,4 +27,4 @@ def bracket(loc,sec,key):
     print(temp)
 
 
-bracket("config2021.cfg", "ITR_5", "temp")
+bracket("Config/config2019.cfg", "ITR_0", "temp")
