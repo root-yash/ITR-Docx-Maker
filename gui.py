@@ -3,13 +3,14 @@ from tkinter import *
 from data.Parse import resource_path, parsepdf, save_as
 import configparser
 from collections import OrderedDict
+import tkinter.messagebox
 
 def getlocation():
     files = filedialog.askopenfilename(title="select the file", filetypes=[("PDF", "*.pdf")])
     return files
 
 def savelocation(valuedict):
-    files = filedialog.asksaveasfilename(defaultextension='.docx',title="Save location", filetypes=[("Docx", "*.docx")])
+    files = filedialog.asksaveasfilename(defaultextension='.docx',title="Save location", filetypes=[("Word Document", "*.docx")])
     save_as(valuedict, valuedict["itr"], files)
 
 def back(tble,main):
@@ -65,6 +66,11 @@ def table(main, browse):
     main.withdraw()
     global valuedict
     valuedict, yr, itr = parsepdf(loc=browse)
+    # if wrong document opened
+    if itr == -1:
+        tkinter.messagebox.showinfo('Wrong Format', 'Wrong Pdf File is selected')
+        main.deiconify()
+        return
 
     tble = Tk()
     tble.title("ITR Docx")

@@ -229,6 +229,9 @@ class Itrparser:
                         itr = -1
                 if type(year) == str and itr != -1:
                     break
+            # if wrong form or document
+            if itr == -1:
+                return value, year, itr
             self.itr = itr
             self.year = int(year)
             # call function and produce config dict
