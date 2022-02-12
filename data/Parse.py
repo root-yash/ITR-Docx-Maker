@@ -61,21 +61,33 @@ class Itrparser:
         #     # dict to its corresponding table
         #     self.configuration[i+'t'] = temp
 
-    def tableparse(self, tables, key):
+    def tableparse(self, tables, key, tidx):
 
         # input : table : nested list containing string
         #         key : column of the table whose first element from row to choose
         # output : value at first row of that column
 
+        temp = 0
         key = re.compile(r".*{}.*".format(key.lower()))
+        tablerow_add = int(self.configuration["main"]["tablerow_add"][tidx])
+        tablecolumn = int(self.configuration["main"]["tablecolumn"][tidx])
         for table in tables:
             for j in range(len(table)):
                 for k in range(len(table[j])):
                     if table[j][k] != None:
                         if key.match(table[j][k].lower()):
-                            return table[j+1][k].replace("\n","")
+                            if tablecolumn == 0:
+                                return table[j+tablerow_add][k].replace("\n","")
+                            else:
+                                for i in table[j]:
+                                    if i != None:
+                                        temp += 1
+                                        if temp == tablecolumn:
+                                            return i.replace("\n", "")
 
-    def page_all(self, page, idx, table):
+
+
+    def page_all(self, page, idx, table, page_idx):
 
         #   input  : string page
         #   output : dict containing the detail according to config file
@@ -107,8 +119,13 @@ class Itrparser:
 
         # loop through all the line of the page
         i = 0
+        tidx = 0
+
         while i < len(page_split):
             if regex_compile.match(page_split[i].lower()):                                         # line match the re
+                if ftype[idx] == 'table':
+                    with pdfplumber.open(self.loc) as pdf:
+                        table = pdf.pages[page_idx].extract_tables()
                 # in order to find the number
                 if d_type[idx] == "no":
                     *_, l = page_split[i].split(' ')
@@ -120,11 +137,15 @@ class Itrparser:
                         *l, _ = page_split[i - 1].split(" ")
                         temp = ' '.join(l).split('(')
                         first_name = temp[0].strip()
-                        last_name = temp[1].strip()[:-1]
-                        if last_name.lower().startswith("prop"):
-                            last_name = " ".join(last_name.split(" ")[2:])
-                        # Name,company name
-                        data.update({"full_name": first_name, "cmpny_name": last_name})
+                        try:
+                            last_name = temp[1].strip()[:-1]
+                            if last_name.lower().startswith("prop"):
+                                last_name = " ".join(last_name.split(" ")[2:])
+                            # Name,company name
+                            data.update({"full_name": first_name, "cmpny_name": last_name})
+                        except:
+                            data.update({"full_name": first_name})
+
                     # all the other itr
                     else:
                         flag = 1
@@ -139,12 +160,17 @@ class Itrparser:
                                 tempi = tempi + 1
                         elif ftype[idx] == "down":
                             tempi = i - 1
-                        else:
+                        elif ftype[idx] == "table":
                             flag = 0
-                            data[key[idx]] = self.tableparse(table, start[idx])
+                            data[key[idx]] = self.tableparse(table, start[idx], tidx)
+                            tidx += 1
 
-                        temp = list(filter(('').__ne__, page_split[tempi].split(" ")))
+                        if itr == 4 and yr == 2021 and ftype[idx] == "itr4":      # weired formating need to used this for cmpny name
+                            tempi = i + 2
+
+
                         if flag == 1:
+                            temp = list(filter(('').__ne__, page_split[tempi].split(" ")))
                             if columne[idx] == columns[idx]:
                                 data[key[idx]] = temp[int(columne[idx])]
                             else:
@@ -225,6 +251,8 @@ class Itrparser:
                         itr = 5
                     elif re.compile(r"ITR.?6").match(line):
                         itr = 6
+                    elif re.compile(r"ITR.?7").match(line):
+                        itr = 7
                     else:
                         itr = -1
                 if type(year) == str and itr != -1:
@@ -236,9 +264,8 @@ class Itrparser:
             self.year = int(year)
             # call function and produce config dict
             self.configdict(itr, year)
-            dictdata, idx = self.page_all(page, idx, None)
+            dictdata, idx = self.page_all(page, idx, None, 0)
             value.update(dictdata)
-            ftype = self.configuration["main"]["ftype"]
             pageadd = self.configuration["main"]["pageadd"]
             i = 1
             # loop through page after 1st page
@@ -247,9 +274,7 @@ class Itrparser:
                 i = i+int(pageadd[idx])
                 pageadd[idx] = 0
                 page = pdf.pages[i].extract_text()                             # load pages in dictionary
-                if ftype[idx] == 'table':
-                    table = pdf.pages[i].extract_tables()
-                dictdata, idx = self.page_all(page, idx, table)
+                dictdata, idx = self.page_all(page, idx, table, i)
                 value.update(dictdata)
                 if idx == -1:
                     break
@@ -290,7 +315,12 @@ def parsepdf(loc):
     return value, year, itr
 
 def save_as(value_dict,itr,save_loc):
-    temploc = 'template/{}.docx'.format(itr)
-    docx = DocxTemplate(resource_path(temploc))
-    docx.render(value_dict)
-    docx.save(save_loc)
+    try:
+        temploc = 'template/{}.docx'.format(itr)
+        docx = DocxTemplate(resource_path(temploc))
+        docx.render(value_dict)
+        docx.save(save_loc)
+        return 1                                               # if file saved
+    except:
+        return 0
+

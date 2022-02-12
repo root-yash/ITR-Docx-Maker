@@ -27,4 +27,5 @@ def bracket(loc,sec,key):
     print(temp)
 
 
-bracket("Config/config2019.cfg", "ITR_0", "temp")
+bracket("Config/config2019.cfg", "ITR_7", "last")
+

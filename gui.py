@@ -10,8 +10,12 @@ def getlocation():
     return files
 
 def savelocation(valuedict):
-    files = filedialog.asksaveasfilename(defaultextension='.docx',title="Save location", filetypes=[("Word Document", "*.docx")])
-    save_as(valuedict, valuedict["itr"], files)
+    files = filedialog.asksaveasfilename(defaultextension='.docx', title="Save location", filetypes=[("Word Document", "*.docx")])
+    flag = save_as(valuedict, valuedict["itr"], files)
+    if flag == 1:
+        tkinter.messagebox.showinfo('File Saved', "Document has been saved")
+    else:
+        tkinter.messagebox.showinfo('Error', 'Document not saved')
 
 def back(tble,main):
     main.deiconify()
@@ -52,7 +56,7 @@ def previous_widget(event):
 def location(main):
     # main: tkinter
     height = 130
-    width = 450
+    width = 550
     x = int(main.winfo_screenwidth()/2 - width/2)
     y = int(main.winfo_screenheight()/2 - height/2)
     main.geometry("{}x{}+{}+{}".format(width, height, x, y))
@@ -76,7 +80,7 @@ def table(main, browse):
     tble.title("ITR Docx")
     tble.iconbitmap(resource_path("logo/ITR Docx-logosb.ico"))
 
-    if itr > 0:
+    if itr > 0 and itr < 7:
 
         config = configparser.RawConfigParser()
         config.read(resource_path('Config/config.cfg'))
@@ -148,12 +152,15 @@ def table(main, browse):
 
 
     else:
+        if itr == 0:
+            itr = "V"
         location(tble)
         tble.resizable(False, False)
         bottom = Frame(tble)
         bottom.pack(fill=BOTH, expand=1)
-        Label(bottom,text="Name : "+valuedict["full_name"], width=30).grid(row=0, column=0, padx=(10, 0), pady=(10, 10))
-        Label(bottom, text="Pan : " + valuedict["pan"], width=30).grid(row=0, column=1, padx=(10, 0), pady=(10, 10))
+        Label(bottom, text="Name : "+valuedict["full_name"], width=30).grid(row=0, column=0, padx=(10, 0), pady=(15, 10))
+        Label(bottom, text="Pan : " + valuedict["pan"], width=20).grid(row=0, column=1, padx=(10, 0), pady=(15, 10))
+        Label(bottom, text="ITR-" + str(itr), width=20).grid(row=0, column=2, padx=(10, 0), pady=(15, 10))
         Button(bottom, text="Save As", padx=40, pady=5, command=lambda: savelocation(valuedict)).grid(row=1, column=0, pady=(10, 10), padx=(10, 10))
         Button(bottom, text="Get Back", padx=40, pady=5, command=lambda: back(tble, main)).grid(row=1, column=1, pady=(10, 10), padx=(10, 10))
 
