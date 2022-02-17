@@ -314,12 +314,24 @@ def parsepdf(loc):
     print(time.time()-s)
     return value, year, itr
 
-def save_as(value_dict,itr,save_loc):
+def save_as(value_dict,save_loc):
     try:
-        temploc = 'template/{}.docx'.format(itr)
-        docx = DocxTemplate(resource_path(temploc))
-        docx.render(value_dict)
-        docx.save(save_loc)
+        page = []
+        header = DocxTemplate(resource_path("template/header.docx"))
+        print(value_dict)
+        for itr in range(0,9):
+            if itr in value_dict.keys():
+                temploc = 'template/{}.docx'.format(itr)
+                temp_docx = DocxTemplate(resource_path(temploc))
+                temp_docx.render(value_dict[itr])
+                temp_docx.save(save_loc)
+                sub_doc = header.new_subdoc(save_loc)
+                page.append(sub_doc)
+        footer = header.new_subdoc(resource_path("template/footer.docx"))
+        context = {"pages": page, "remarks": value_dict["remarks"], "footer": footer}
+        context.update(value_dict["trueval"])
+        header.render(context)
+        header.save(save_loc)
         return 1                                               # if file saved
     except:
         return 0
