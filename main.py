@@ -29,10 +29,7 @@ if __name__ == '__main__':
     enter.grid(row=3, columnspan=2, padx=(20, 20), pady=(20, 20))
     main.mainloop()
 
+# TODO Revised and orginal
+# TODO 2019 in achnoledgenment
+# TODO
 
-
-
-# TODO: add template one after another
-# TODO: check all itr user same
-# TODO: some weired error in itr 4 naming
-# TODO: Adding remark Box

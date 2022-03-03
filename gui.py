@@ -11,8 +11,7 @@ def getlocation():
 
 
 def generate_docx(context, remark, files, tble, save_remark):
-    print(context)
-    context.update({"remarks":remark})
+    context.update({"remarks": remark})
     flag = save_as(context, files)
     back(save_remark, tble)
     if flag == 1:
@@ -91,10 +90,14 @@ def makecontext(valuedict, context):
     # update context
     if len(context) == 0 or valuedict["itr"] not in context.keys():
         temp = valuedict.copy()
-        valuedict.update({"sno":"1"})
+        valuedict.update({"sno": "1"})
         if "cmpny_name" in temp.keys():
             temp['cmpny_name'] = "Balance Sheet of " + temp["cmpny_name"] + "\n"
-        context.update({"trueval": temp, valuedict["itr"]: {"contents": [valuedict]}})
+        if "trueval" in context.keys():
+            context["trueval"].update(temp)
+        else:
+            context["trueval"] = temp
+        context.update({valuedict["itr"]: {"contents": [valuedict]}})
     else:
         temp_list = context[valuedict["itr"]]["contents"]
         valuedict.update({"and": "and", "sno": len(temp_list)+1})

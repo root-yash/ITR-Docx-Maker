@@ -1,7 +1,6 @@
 import pdfplumber
 import re
 import configparser
-import time
 from docxtpl import DocxTemplate
 import os
 import sys
@@ -293,8 +292,7 @@ class Itrparser:
             variable = list(sumdict.values())
             for i, j in zip(key, variable):
                 value.update(self.sumorsub(i, j, value, flag=1))
-        print(len(value))
-        print(value)
+
         value.update({"yr1": year[-2:], "yr2": str(int(year[-2:])+1), "itr": itr})
         return value, year, itr
 
@@ -308,21 +306,20 @@ def parsepdf(loc):
     #         save_loc:string location where to save the generated docx
     # function parse the itr and get important information
     # Output : itr save at save location
-    s = time.time()
     cl = Itrparser(loc)
     value, year, itr = cl.main()
-    print(time.time()-s)
     return value, year, itr
 
 def save_as(value_dict,save_loc):
     try:
         page = []
         header = DocxTemplate(resource_path("template/header.docx"))
-        print(value_dict)
-        for itr in range(0,9):
+        for itr in range(0, 9):
             if itr in value_dict.keys():
                 temploc = 'template/{}.docx'.format(itr)
                 temp_docx = DocxTemplate(resource_path(temploc))
+                if itr == 0 or itr == 7:
+                    value_dict[itr].update(value_dict["trueval"])
                 temp_docx.render(value_dict[itr])
                 temp_docx.save(save_loc)
                 sub_doc = header.new_subdoc(save_loc)
