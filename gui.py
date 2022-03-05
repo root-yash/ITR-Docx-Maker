@@ -44,11 +44,13 @@ def back(tble,main):
     tble.quit()
     tble.destroy()
 
-def quit(tble,main):
+def quit(tble,main,landing = None):
     tble.quit()
     tble.destroy()
     main.quit()
     main.destroy()
+    if landing!=None:
+        landing.deiconify()
 
 def remarks(tble, nandkvalue):
     # input : tble: window class of tkinter
@@ -88,6 +90,7 @@ def makecontext(valuedict, context):
     # input valuedict generated from current pdf
     # context stored value of value dict as {itr_no: {"trueval":valdict, "context":[valuedict1, valuedict2]}
     # update context
+
     if len(context) == 0 or valuedict["itr"] not in context.keys():
         temp = valuedict.copy()
         valuedict.update({"sno": "1"})
@@ -105,15 +108,15 @@ def makecontext(valuedict, context):
         context[valuedict["itr"]]["contents"] = temp_list
     return context
 
-def add_document(tble, main):
+def add_document(tble, main, landing):
     browse = getlocation()
     if len(browse) == 0:
         return
     tble.quit()
     tble.destroy()
-    table(main, browse)
+    table(main, landing, browse)
 
-def table(main, browse):
+def table(main, landing, browse):
 
     if len(browse) < 2:
         return
@@ -212,7 +215,7 @@ def table(main, browse):
             Button(bottom, text="Get Back", padx=40, command=lambda: back(tble, main)).grid(row=1, column=0, padx=(20, 0))
             Button(bottom, text="Save As", padx=40, command=lambda: savelocation(context, tble)).grid(row=1, column=1)
             Button(bottom, text="Calculate Remark", padx=20, command=lambda: remarks(tble, list(nandk.values()))).grid(row=1, column=2)
-            Button(bottom, text="Add More Documents", command=lambda: add_document(tble, main)).grid(row=1, column=3)
+            Button(bottom, text="Add More Documents", command=lambda: add_document(tble, main, landing)).grid(row=1, column=3)
 
 
         else:
@@ -227,13 +230,13 @@ def table(main, browse):
             Label(bottom, text="ITR-" + str(itr), width=30).grid(row=0, column=3, padx=(10, 0), pady=(25, 25))
             Button(bottom, text="Save As", padx=40, pady=5, command=lambda: savelocation(context, tble)).grid(row=2, column=0, pady=(10, 10), padx=(100, 25))
             Button(bottom, text="Get Back", padx=40, pady=5, command=lambda: back(tble, main)).grid(row=2, column=1, pady=(10, 10), padx=(10, 25))
-            Button(bottom, text="Add More Documents", padx=40, pady=5, command=lambda : add_document(tble, main)).grid(row=2, column=2, pady=(10, 10), padx=(10, 25))
+            Button(bottom, text="Add More Documents", padx=40, pady=5, command=lambda : add_document(tble, main, landing)).grid(row=2, column=2, pady=(10, 10), padx=(10, 25))
 
     except KeyError:
         tkinter.messagebox.showinfo('Pdf Format', 'Weird Pdf File Format')
         back(tble, main)
 
-    tble.protocol('WM_DELETE_WINDOW', lambda: quit(tble, main))
+    tble.protocol('WM_DELETE_WINDOW', lambda: quit(tble, main, landing))
     tble.mainloop()
 
 

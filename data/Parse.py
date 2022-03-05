@@ -129,7 +129,11 @@ class Itrparser:
                 if d_type[idx] == "no":
                     *_, l = page_split[i].split(' ')
                     # change 1,323 to 1323 integer
-                    data[key[idx]] = int(''.join(l.split(',')))
+                    try:
+                        temp_no = int(''.join(l.split(',')))
+                    except:
+                        temp_no = ''.join(l.split(','))
+                    data[key[idx]] = temp_no
                 else:                                                                      # if it is a string
                     # itr3 2021-2022
                     if itr == 3 and yr == 2021:
@@ -308,6 +312,7 @@ def parsepdf(loc):
     # Output : itr save at save location
     cl = Itrparser(loc)
     value, year, itr = cl.main()
+    print(value)
     return value, year, itr
 
 def save_as(value_dict,save_loc):
