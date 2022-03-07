@@ -1,6 +1,6 @@
 from tkinter import filedialog
 from tkinter import *
-from data.Parse import resource_path, parsepdf, save_as
+from data.Parse import resource_path, parsepdf, save_as, parsepdfgst, save_aspdf
 import configparser
 from collections import OrderedDict
 import tkinter.messagebox
@@ -9,6 +9,9 @@ def getlocation():
     files = filedialog.askopenfilename(title="select the file", filetypes=[("PDF", "*.pdf")])
     return files
 
+def getlocations():
+    files = filedialog.askopenfilenames(title="select the files", filetypes=[("PDF", "*.pdf")])
+    return list(files)
 
 def generate_docx(context, remark, files, tble, save_remark):
     context.update({"remarks": remark})
@@ -239,7 +242,45 @@ def table(main, landing, browse):
     tble.protocol('WM_DELETE_WINDOW', lambda: quit(tble, main, landing))
     tble.mainloop()
 
+def gsttable(main, landing, browse, browse2):
 
+    value_dict = {}
+    value_list = []
+    sno = 1
+    gstin = ""
+    browse = [list(browse), list(browse2)]
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    year = ["2019-20", "2020-21", "2021-22"]
+    for form in range(1, len(browse)+1):
+        for loc in browse[form-1]:
+            temp_value = parsepdfgst(loc, form)
+            if len(gstin) == 0:
+                gstin = temp_value["gstin"]
+            if temp_value["gstin"] == gstin:
+                key = temp_value["period"][0:3]+"-"+temp_value["year"]
+                if key in value_dict:
+                    value_dict[key].update(temp_value)
+                    value_dict[key]["remark"] = value_dict[key]["tottaxa"] - value_dict[key]["tottaxb"]
+                else:
+                    value_dict[key] = temp_value
+            else:
+                print("File with different Gstin")
+    y = ""
+    for i in year:
+        if len(y) > 0:
+            y = y + ","
+        y = y + i
+        for j in months:
+            key = j + "-" + i
+            if key in value_dict:
+                value_dict[key]["period"] = key
+                value_dict[key]["sno"] = sno
+                sno += 1
+                value_list.append(value_dict[key])
+    value_list[0].update({"years": y})
+    save_aspdf(value_list, "hi.docx")
+
+    print(value_dict)
 
 
 

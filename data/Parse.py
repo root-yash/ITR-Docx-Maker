@@ -26,6 +26,7 @@ class Itrparser:
         self.configuration = {}
         self.year = int()
         self.itr = int()
+        self.gst = int()
 
     def configdict(self, itr, year):
         # input : take the year and itr no (itr:int , year:string)
@@ -48,17 +49,6 @@ class Itrparser:
             # dict to its corresponding pages
         self.configuration = dictvalue
 
-        # table data
-        # for i in self.tablep:
-        #     if i == '':
-        #         break
-        #     temp = {}
-        #     # store dict info to parse into list
-        #     temp_dict = dict(config.items(section + "_" + i + 't'))
-        #     for key in temp_dict.keys():
-        #         temp[key] = temp_dict[key].split(",")
-        #     # dict to its corresponding table
-        #     self.configuration[i+'t'] = temp
 
     def tableparse(self, tables, key, tidx):
 
@@ -223,85 +213,140 @@ class Itrparser:
 
         return {key: temp}
 
-    def parse_data(self):
+    def getfloat(self, data):
+        s = ""
+        for i in data:
+            if i.isnumeric() or i == "." or i == "-":
+                s = s+i
+        if len(s) == 0 or s == "-":
+            return float(0.0)
+        return float(s)
+
+    def gst_table(self, page, gst):
+        value = {}
+        temp = []
+        i = 0
+        if gst == 1:
+            while len(page) > i:
+                if len(page[i]) > 1:
+                    temp.append(page[i])
+                    i += 1
+                else:
+                    temp.append(page[i]+page[i+1])
+                    i += 2
+            page = temp
+            self.year = page[0][0][1]
+            value["period"] = page[0][1][1]
+            value["year"] = self.year
+            value["gstin"] = page[1][0][1].strip()
+            value["cmpny_name"] = page[1][2][1].replace("\n", "")
+            value["tottaxa"] = self.getfloat(page[2][1][2])+self.getfloat(page[3][1][2])+self.getfloat(page[4][1][2])+\
+                               self.getfloat(page[5][1][2])+self.getfloat(page[6][1][2])+self.getfloat(page[7][1][2])+\
+                               self.getfloat(page[8][1][1])+self.getfloat(page[8][1][2])+self.getfloat(page[8][1][3])
+        else:
+            self.year = page[0][0][1]
+            value["period"] = page[0][1][1]
+            value["year"] = self.year
+            value["gstin"] = page[1][0][1].strip()
+            value["cmpny_name"] = page[1][2][1].replace("\n", "")
+            value["tottaxb"] = self.getfloat(page[2][1][1]) + self.getfloat(page[2][2][1]) + \
+                               self.getfloat(page[2][3][1]) + self.getfloat(page[2][5][1])
+            value["inttax"] = self.getfloat(page[2][1][2]) + self.getfloat(page[2][2][2])
+            value["centax"] = self.getfloat(page[2][1][3]) + self.getfloat(page[2][2][3])
+            value["statax"] = self.getfloat(page[2][1][4]) + self.getfloat(page[2][2][4])
+        return value
+
+
+    def parse_data(self, itr_flag=0):
         # return itr:integer
         #        year: string
-        value = {}
-        idx = 0
-        itr = -1
-        year = ["2021-22", "2020-21", "2019-20"]
-        with pdfplumber.open(self.loc) as pdf:
-            page = pdf.pages[0].extract_text()
+        if itr_flag == 0:
+            value = {}
+            idx = 0
+            itr = -1
+            year = ["2021-22", "2020-21", "2019-20"]
+            with pdfplumber.open(self.loc) as pdf:
+                page = pdf.pages[0].extract_text()
 
-            for line in page.split('\n'):
+                for line in page.split('\n'):
 
-                # check for the year in the docx
-                if type(year) != str:
-                    for i in year:
-                        temp = line.replace(" ", "")
-                        if temp.find(i) != -1:
-                            year = i.split("-")[0]
+                    # check for the year in the docx
+                    if type(year) != str:
+                        for i in year:
+                            temp = line.replace(" ", "")
+                            if temp.find(i) != -1:
+                                year = i.split("-")[0]
 
-                # check for the itr no in the docx
+                    # check for the itr no in the docx
+                    if itr == -1:
+                        if line.find("RETURN ACKNOWLEDGEMENT") != -1 or line.find("VERIFICATION FORM") != -1:
+                            itr = 0
+                        elif re.compile(r"ITR.?3").match(line):
+                            itr = 3
+                        elif re.compile(r"ITR.?4").match(line):
+                            itr = 4
+                        elif re.compile(r"ITR.?5").match(line):
+                            itr = 5
+                        elif re.compile(r"ITR.?6").match(line):
+                            itr = 6
+                        elif re.compile(r"ITR.?7").match(line):
+                            itr = 7
+                        else:
+                            itr = -1
+                    if type(year) == str and itr != -1:
+                        break
+                # if wrong form or document
                 if itr == -1:
-                    if line.find("RETURN ACKNOWLEDGEMENT") != -1 or line.find("VERIFICATION FORM") != -1:
-                        itr = 0
-                    elif re.compile(r"ITR.?3").match(line):
-                        itr = 3
-                    elif re.compile(r"ITR.?4").match(line):
-                        itr = 4
-                    elif re.compile(r"ITR.?5").match(line):
-                        itr = 5
-                    elif re.compile(r"ITR.?6").match(line):
-                        itr = 6
-                    elif re.compile(r"ITR.?7").match(line):
-                        itr = 7
-                    else:
-                        itr = -1
-                if type(year) == str and itr != -1:
-                    break
-            # if wrong form or document
-            if itr == -1:
-                return value, year, itr
-            self.itr = itr
-            self.year = int(year)
-            # call function and produce config dict
-            self.configdict(itr, year)
-            dictdata, idx = self.page_all(page, idx, None, 0)
-            value.update(dictdata)
-            pageadd = self.configuration["main"]["pageadd"]
-            i = 1
-            # loop through page after 1st page
-            while i < 30 and itr != 0:
-                table = None
-                i = i+int(pageadd[idx])
-                pageadd[idx] = 0
-                page = pdf.pages[i].extract_text()                             # load pages in dictionary
-                dictdata, idx = self.page_all(page, idx, table, i)
+                    return value, year, itr
+                self.itr = itr
+                self.year = int(year)
+                # call function and produce config dict
+                self.configdict(itr, year)
+                dictdata, idx = self.page_all(page, idx, None, 0)
                 value.update(dictdata)
-                if idx == -1:
-                    break
-                i = i+1
-        sumdict = self.configuration["sum"]
-        subdict = self.configuration["sub"]
+                pageadd = self.configuration["main"]["pageadd"]
+                i = 1
+                # loop through page after 1st page
+                while i < 30 and itr != 0:
+                    table = None
+                    i = i+int(pageadd[idx])
+                    pageadd[idx] = 0
+                    page = pdf.pages[i].extract_text()                             # load pages in dictionary
+                    dictdata, idx = self.page_all(page, idx, table, i)
+                    value.update(dictdata)
+                    if idx == -1:
+                        break
+                    i = i+1
+            sumdict = self.configuration["sum"]
+            subdict = self.configuration["sub"]
 
-        if len(subdict) > 0:
-            key = list(subdict.keys())
-            variable = list(subdict.values())
-            for i, j in zip(key, variable):
-                value.update(self.sumorsub(i, j, value, flag=0))
+            if len(subdict) > 0:
+                key = list(subdict.keys())
+                variable = list(subdict.values())
+                for i, j in zip(key, variable):
+                    value.update(self.sumorsub(i, j, value, flag=0))
 
-        if len(sumdict) > 0:
-            key = list(sumdict.keys())
-            variable = list(sumdict.values())
-            for i, j in zip(key, variable):
-                value.update(self.sumorsub(i, j, value, flag=1))
+            if len(sumdict) > 0:
+                key = list(sumdict.keys())
+                variable = list(sumdict.values())
+                for i, j in zip(key, variable):
+                    value.update(self.sumorsub(i, j, value, flag=1))
 
-        value.update({"yr1": year[-2:], "yr2": str(int(year[-2:])+1), "itr": itr})
-        return value, year, itr
+            value.update({"yr1": year[-2:], "yr2": str(int(year[-2:])+1), "itr": itr})
+            return value, year, itr
+        else:
+            # for gst parsing
+            value = {}
+            idx = 0
+            with pdfplumber.open(self.loc) as pdf:
+                page = pdf.pages[0].extract_tables()
+                if itr_flag == 1:
+                    page += pdf.pages[1].extract_tables()
+                value.update(self.gst_table(page, itr_flag))
+            return value
 
-    def main(self):
-        return self.parse_data()
+    def main(self, flag=0):
+        return self.parse_data(flag)
 
 
 def parsepdf(loc):
@@ -312,11 +357,21 @@ def parsepdf(loc):
     # Output : itr save at save location
     cl = Itrparser(loc)
     value, year, itr = cl.main()
-    print(value)
     return value, year, itr
+
+def parsepdfgst(loc, flag = 1):
+    # Input : loc :string location of file/pdf
+    #         save_loc:string location where to save the generated docx
+    # function parse the itr and get important information
+    # Output : gst save at save location
+    cl = Itrparser(loc)
+    value = cl.main(flag)
+    return value
+
 
 def save_as(value_dict,save_loc):
     try:
+        print(value_dict)
         page = []
         header = DocxTemplate(resource_path("template/header.docx"))
         for itr in range(0, 9):
@@ -337,4 +392,17 @@ def save_as(value_dict,save_loc):
         return 1                                               # if file saved
     except:
         return 0
+def save_aspdf(value_list, save_loc):
+    try:
+        header = DocxTemplate(resource_path("template/gst.docx"))
+        footer = header.new_subdoc(resource_path("template/footer.docx"))
+        temp = value_list[0]
+        context = {"contents": value_list, "footer": footer, "cmpny_name": temp["cmpny_name"], "years": temp["years"],
+                   "gstin": temp["gstin"]}
+        header.render(context)
+        header.save(save_loc)
+        return 1
+    except:
+        return 0
+
 
