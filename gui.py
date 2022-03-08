@@ -13,16 +13,20 @@ def getlocations():
     files = filedialog.askopenfilenames(title="select the files", filetypes=[("PDF", "*.pdf")])
     return list(files)
 
-def generate_docx(context, remark, files, tble, save_remark):
-    context.update({"remarks": remark})
-    flag = save_as(context, files)
+def generate_docx(context, remark, files, tble, save_remark, flag_gst):
+
+    if flag_gst == 0:
+        context.update({"remarks": remark})
+        flag = save_as(context, files)
+    else:
+        flag = save_aspdf(context, files, remark)
     back(save_remark, tble)
     if flag == 1:
         tkinter.messagebox.showinfo('File Saved', "Document has been saved")
     else:
         tkinter.messagebox.showinfo('Error', 'Document not saved')
 
-def savelocation(context, tble):
+def savelocation(context, tble, flag = 0):
     tble.withdraw()
     files = filedialog.asksaveasfilename(defaultextension='.docx', title="Save location", filetypes=[("Word Document", "*.docx")])
     ### GUI ###
@@ -33,7 +37,7 @@ def savelocation(context, tble):
     bottom = Frame(save_remark)
     bottom.grid(row=0, column=0, columnspan=4)
     Label(bottom, text="Remarks:", padx=5, pady=5, width=20).grid(row=0, column=0, pady=(10, 10))
-    Button(bottom, text="OK", width =30, command=lambda: generate_docx(context,textremark.get("0.0", "end"),files, tble, save_remark)).grid(row=1, columnspan=2, pady=(10, 10))
+    Button(bottom, text="OK", width =30, command=lambda: generate_docx(context,textremark.get("0.0", "end"),files, tble, save_remark, flag)).grid(row=1, columnspan=2, pady=(10, 10))
     textremark = Text(bottom, height=4)
     textremark.grid(row=0, column=1, columnspan=3, pady=(10, 10))
     # default text
@@ -243,7 +247,7 @@ def table(main, landing, browse):
     tble.mainloop()
 
 def gsttable(main, landing, browse, browse2):
-
+    main.withdraw()
     value_dict = {}
     value_list = []
     sno = 1
@@ -278,9 +282,24 @@ def gsttable(main, landing, browse, browse2):
                 sno += 1
                 value_list.append(value_dict[key])
     value_list[0].update({"years": y})
-    save_aspdf(value_list, "hi.docx")
-
-    print(value_dict)
+    tble = Tk()
+    tble.title("ITR Docx")
+    tble.iconbitmap(resource_path("logo/ITR Docx-logosb.ico"))
+    location(tble, 160, 700)
+    tble.resizable(False, False)
+    bottom = Frame(tble)
+    bottom.grid(row=0, columnspan=4)
+    Label(bottom, text="Name : " + value_list[0]["cmpny_name"], width=50).grid(row=0, column=0, columnspan=2, padx=(0, 0),
+                                                                          pady=(25, 25))
+    Label(bottom, text="Pan : " + value_list[0]["gstin"], width=30).grid(row=0, column=2, padx=(10, 0), pady=(25, 25))
+    Button(bottom, text="Save As", padx=40, pady=5, command=lambda: savelocation(value_list, tble, 1)).grid(row=2, column=0,
+                                                                                                      pady=(10, 10),
+                                                                                                      padx=(100, 25))
+    Button(bottom, text="Get Back", padx=40, pady=5, command=lambda: back(tble, main)).grid(row=2, column=1,
+                                                                                            pady=(10, 10),
+                                                                                            padx=(10, 25))
+    tble.protocol('WM_DELETE_WINDOW', lambda: quit(tble, main, landing))
+    tble.mainloop()
 
 
 

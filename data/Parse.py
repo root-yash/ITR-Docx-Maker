@@ -220,7 +220,7 @@ class Itrparser:
                 s = s+i
         if len(s) == 0 or s == "-":
             return float(0.0)
-        return float(s)
+        return round(float(s), 2)
 
     def gst_table(self, page, gst):
         value = {}
@@ -371,7 +371,6 @@ def parsepdfgst(loc, flag = 1):
 
 def save_as(value_dict,save_loc):
     try:
-        print(value_dict)
         page = []
         header = DocxTemplate(resource_path("template/header.docx"))
         for itr in range(0, 9):
@@ -392,13 +391,13 @@ def save_as(value_dict,save_loc):
         return 1                                               # if file saved
     except:
         return 0
-def save_aspdf(value_list, save_loc):
+def save_aspdf(value_list, save_loc, remark):
     try:
         header = DocxTemplate(resource_path("template/gst.docx"))
         footer = header.new_subdoc(resource_path("template/footer.docx"))
         temp = value_list[0]
         context = {"contents": value_list, "footer": footer, "cmpny_name": temp["cmpny_name"], "years": temp["years"],
-                   "gstin": temp["gstin"]}
+                   "gstin": temp["gstin"], "remarks": remark}
         header.render(context)
         header.save(save_loc)
         return 1
