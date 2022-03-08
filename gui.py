@@ -291,6 +291,7 @@ def gsttable(main, landing, browse, browse2):
         if len(y) > 0:
             y = y + ","
         y = y + i
+        key = ""
         for j in months:
             key = j + "-" + i
             if key in value_dict:
@@ -309,7 +310,8 @@ def gsttable(main, landing, browse, browse2):
                 value_dict[key]["total"] = '0'
                 sno += 1
                 value_list.append(value_dict[key])
-        value_list[len(value_list)-1].update({"ta": round(a, 2), "tb": round(b, 2), "tc": round(c, 2), "td": round(d, 2), "te": round(e, 2), "tf": round(f, 2), "total": '1'})
+        if key in value_dict:
+            value_list[len(value_list)-1].update({"ta": round(a, 2), "tb": round(b, 2), "tc": round(c, 2), "td": round(d, 2), "te": round(e, 2), "tf": round(f, 2), "total": '1'})
     value_list[0].update({"years": y})
     tble = Tk()
     tble.title("ITR Docx")
