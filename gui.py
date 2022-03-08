@@ -1,4 +1,4 @@
-from tkinter import filedialog
+from tkinter import filedialog,ttk
 from tkinter import *
 from data.Parse import resource_path, parsepdf, save_as, parsepdfgst, save_aspdf
 import configparser
@@ -253,7 +253,7 @@ def gsttable(main, landing, browse, browse2):
     sno = 1
     gstin = ""
     browse = [list(browse), list(browse2)]
-    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    months = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"]
     year = ["2019-20", "2020-21", "2021-22"]
     for form in range(1, len(browse)+1):
         for loc in browse[form-1]:
@@ -267,34 +267,49 @@ def gsttable(main, landing, browse, browse2):
                     key1 = months[p_idx-1] + "-" + temp_value["year"]
                     key2 = months[p_idx] + "-" + temp_value["year"]
                     temp_value.update({"p1": key, "p2": key1, "p3": key2})
-                    temp_value.update({'col': False})
+                    if "col" not in temp_value and form == 1:
+                        temp_value.update({'col': "0"})
                     if key in value_dict:
                         value_dict[key].update(temp_value)
-                        value_dict[key]["remark"] = value_dict[key]["tottaxa"] - value_dict[key]["tottaxb"]
+                        value_dict[key]["remark"] = round(value_dict[key]["tottaxa"] - value_dict[key]["tottaxb"], 2)
                     else:
                         value_dict[key] = temp_value
                 else:
                     key = temp_value["period"][0:3] + "-" + temp_value["year"]
-                    temp_value.update({'col': True})
+                    if "col" not in temp_value and form == 1:
+                        temp_value.update({'col': "1"})
                     if key in value_dict:
                         value_dict[key].update(temp_value)
-                        value_dict[key]["remark"] = value_dict[key]["tottaxa"] - value_dict[key]["tottaxb"]
+                        value_dict[key]["remark"] = round(value_dict[key]["tottaxa"] - value_dict[key]["tottaxb"], 2)
                     else:
                         value_dict[key] = temp_value
             else:
                 print("File with different Gstin")
     y = ""
     for i in year:
+        a = b = c = d = e = f = 0.0
         if len(y) > 0:
             y = y + ","
         y = y + i
         for j in months:
             key = j + "-" + i
             if key in value_dict:
+                a += value_dict[key]["tottaxa"]
+                b += value_dict[key]["tottaxb"]
+                c += value_dict[key]["inttax"]
+                d += value_dict[key]["centax"]
+                e += value_dict[key]["statax"]
+                f += value_dict[key]["remark"]
                 value_dict[key]["period"] = key
                 value_dict[key]["sno"] = sno
+                if value_dict[key]["col"] == '0':
+                    value_dict[key]["sno1"] = sno + 1
+                    value_dict[key]["sno2"] = sno + 2
+                    sno += 2
+                value_dict[key]["total"] = '0'
                 sno += 1
                 value_list.append(value_dict[key])
+        value_list[len(value_list)-1].update({"ta": round(a, 2), "tb": round(b, 2), "tc": round(c, 2), "td": round(d, 2), "te": round(e, 2), "tf": round(f, 2), "total": '1'})
     value_list[0].update({"years": y})
     tble = Tk()
     tble.title("ITR Docx")

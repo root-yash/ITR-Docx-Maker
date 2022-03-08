@@ -240,17 +240,17 @@ class Itrparser:
             value["year"] = self.year
             value["gstin"] = page[1][0][1].strip()
             value["cmpny_name"] = page[1][2][1].replace("\n", "")
-            value["tottaxa"] = self.getfloat(page[2][1][2])+self.getfloat(page[3][1][2])+self.getfloat(page[4][1][2])+\
+            value["tottaxa"] = round(self.getfloat(page[2][1][2])+self.getfloat(page[3][1][2])+self.getfloat(page[4][1][2])+\
                                self.getfloat(page[5][1][2])+self.getfloat(page[6][1][2])+self.getfloat(page[7][1][2])+\
-                               self.getfloat(page[8][1][1])+self.getfloat(page[8][1][2])+self.getfloat(page[8][1][3])
+                               self.getfloat(page[8][1][1])+self.getfloat(page[8][1][2])+self.getfloat(page[8][1][3]), 2)
         else:
             self.year = page[0][0][1]
             value["period"] = page[0][1][1]
             value["year"] = self.year
             value["gstin"] = page[1][0][1].strip()
             value["cmpny_name"] = page[1][2][1].replace("\n", "")
-            value["tottaxb"] = self.getfloat(page[2][1][1]) + self.getfloat(page[2][2][1]) + \
-                               self.getfloat(page[2][3][1]) + self.getfloat(page[2][5][1])
+            value["tottaxb"] = round(self.getfloat(page[2][1][1]) + self.getfloat(page[2][2][1]) + \
+                               self.getfloat(page[2][3][1]) + self.getfloat(page[2][5][1]), 2)
             value["inttax"] = self.getfloat(page[2][1][2]) + self.getfloat(page[2][2][2])
             value["centax"] = self.getfloat(page[2][1][3]) + self.getfloat(page[2][2][3])
             value["statax"] = self.getfloat(page[2][1][4]) + self.getfloat(page[2][2][4])
@@ -392,14 +392,17 @@ def save_as(value_dict,save_loc):
     except:
         return 0
 def save_aspdf(value_list, save_loc, remark):
-    print(value_list)
-    header = DocxTemplate(resource_path("template/gst.docx"))
-    footer = header.new_subdoc(resource_path("template/footer.docx"))
-    temp = value_list[0]
-    context = {"contents": value_list, "footer": footer, "cmpny_name": temp["cmpny_name"], "years": temp["years"],
-               "gstin": temp["gstin"], "remarks": remark}
-    header.render(context)
-    header.save(save_loc)
-    return 1
+    try:
+        print(value_list)
+        header = DocxTemplate(resource_path("template/gst.docx"))
+        footer = header.new_subdoc(resource_path("template/footer.docx"))
+        temp = value_list[0]
+        context = {"contents": value_list, "footer": footer, "cmpny_name": temp["cmpny_name"], "years": temp["years"],
+                   "gstin": temp["gstin"], "remarks": remark}
+        header.render(context)
+        header.save(save_loc)
+        return 1
+    except:
+        return 0
 
 
