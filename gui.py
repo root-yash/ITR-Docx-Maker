@@ -261,12 +261,26 @@ def gsttable(main, landing, browse, browse2):
             if len(gstin) == 0:
                 gstin = temp_value["gstin"]
             if temp_value["gstin"] == gstin:
-                key = temp_value["period"][0:3]+"-"+temp_value["year"]
-                if key in value_dict:
-                    value_dict[key].update(temp_value)
-                    value_dict[key]["remark"] = value_dict[key]["tottaxa"] - value_dict[key]["tottaxb"]
+                if "Q" in temp_value["period"] or "q" in temp_value["period"]:
+                    p_idx = months.index(temp_value["period"][0:3])
+                    key = months[p_idx-2] + "-" + temp_value["year"]
+                    key1 = months[p_idx-1] + "-" + temp_value["year"]
+                    key2 = months[p_idx] + "-" + temp_value["year"]
+                    temp_value.update({"p1": key, "p2": key1, "p3": key2})
+                    temp_value.update({'col': False})
+                    if key in value_dict:
+                        value_dict[key].update(temp_value)
+                        value_dict[key]["remark"] = value_dict[key]["tottaxa"] - value_dict[key]["tottaxb"]
+                    else:
+                        value_dict[key] = temp_value
                 else:
-                    value_dict[key] = temp_value
+                    key = temp_value["period"][0:3] + "-" + temp_value["year"]
+                    temp_value.update({'col': True})
+                    if key in value_dict:
+                        value_dict[key].update(temp_value)
+                        value_dict[key]["remark"] = value_dict[key]["tottaxa"] - value_dict[key]["tottaxb"]
+                    else:
+                        value_dict[key] = temp_value
             else:
                 print("File with different Gstin")
     y = ""

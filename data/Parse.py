@@ -392,16 +392,14 @@ def save_as(value_dict,save_loc):
     except:
         return 0
 def save_aspdf(value_list, save_loc, remark):
-    try:
-        header = DocxTemplate(resource_path("template/gst.docx"))
-        footer = header.new_subdoc(resource_path("template/footer.docx"))
-        temp = value_list[0]
-        context = {"contents": value_list, "footer": footer, "cmpny_name": temp["cmpny_name"], "years": temp["years"],
-                   "gstin": temp["gstin"], "remarks": remark}
-        header.render(context)
-        header.save(save_loc)
-        return 1
-    except:
-        return 0
+    print(value_list)
+    header = DocxTemplate(resource_path("template/gst.docx"))
+    footer = header.new_subdoc(resource_path("template/footer.docx"))
+    temp = value_list[0]
+    context = {"contents": value_list, "footer": footer, "cmpny_name": temp["cmpny_name"], "years": temp["years"],
+               "gstin": temp["gstin"], "remarks": remark}
+    header.render(context)
+    header.save(save_loc)
+    return 1
 
 
