@@ -261,13 +261,16 @@ def gsttable(main, landing, browse, browse2):
             if len(gstin) == 0:
                 gstin = temp_value["gstin"]
             if temp_value["gstin"] == gstin:
-                if "Q" in temp_value["period"] or "q" in temp_value["period"]:
-                    p_idx = months.index(temp_value["period"][0:3])
+                if "Q" in temp_value["period"] or "q" in temp_value["period"] or "-" in temp_value["period"]:
+                    if form == 1:
+                        p_idx = months.index(temp_value["period"][0:3])
+                    else:
+                        p_idx = months.index(temp_value["period"][-3:])
                     key = months[p_idx-2] + "-" + temp_value["year"]
                     key1 = months[p_idx-1] + "-" + temp_value["year"]
                     key2 = months[p_idx] + "-" + temp_value["year"]
                     temp_value.update({"p1": key, "p2": key1, "p3": key2})
-                    if "col" not in temp_value and form == 1:
+                    if "col" not in temp_value:
                         temp_value.update({'col': "0"})
                     if key in value_dict:
                         value_dict[key].update(temp_value)
@@ -276,7 +279,7 @@ def gsttable(main, landing, browse, browse2):
                         value_dict[key] = temp_value
                 else:
                     key = temp_value["period"][0:3] + "-" + temp_value["year"]
-                    if "col" not in temp_value and form == 1:
+                    if "col" not in temp_value:
                         temp_value.update({'col': "1"})
                     if key in value_dict:
                         value_dict[key].update(temp_value)
@@ -295,12 +298,15 @@ def gsttable(main, landing, browse, browse2):
         for j in months:
             key = j + "-" + i
             if key in value_dict:
-                a += value_dict[key]["tottaxa"]
-                b += value_dict[key]["tottaxb"]
-                c += value_dict[key]["inttax"]
-                d += value_dict[key]["centax"]
-                e += value_dict[key]["statax"]
-                f += value_dict[key]["remark"]
+                if "tottaxa" in value_dict[key]:
+                    a += value_dict[key]["tottaxa"]
+                if "tottaxb" in value_dict[key]:
+                    b += value_dict[key]["tottaxb"]
+                    c += value_dict[key]["inttax"]
+                    d += value_dict[key]["centax"]
+                    e += value_dict[key]["statax"]
+                if "remark" in value_dict[key]:
+                    f += value_dict[key]["remark"]
                 value_dict[key]["period"] = key
                 value_dict[key]["sno"] = sno
                 if value_dict[key]["col"] == '0':
