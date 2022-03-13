@@ -248,7 +248,10 @@ class Itrparser:
             value["period"] = page[0][1][1]
             value["year"] = self.year
             value["gstin"] = page[1][0][1].strip()
-            value["cmpny_name"] = page[1][2][1].replace("\n", "")
+            try:
+                value["cmpny_name"] = page[1][2][1].replace("\n", "")
+            except:
+                value["cmpny_name"] = page[1][1][1].replace("\n", "")
             value["tottaxb"] = round(self.getfloat(page[2][1][1]) + self.getfloat(page[2][2][1]) + \
                                self.getfloat(page[2][3][1]) + self.getfloat(page[2][5][1]), 2)
             value["inttax"] = self.getfloat(page[2][1][2]) + self.getfloat(page[2][2][2])
